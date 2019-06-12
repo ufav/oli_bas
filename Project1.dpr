@@ -3,7 +3,7 @@ program Project1;
 uses
   Vcl.Forms,
   Unit1 in 'Unit1.pas' {Form1},
-  RegExpr in 'C:\Program Files (x86)\Embarcadero\Studio\20.0\lib\win64\RegExpr\RegExpr.pas';
+  RegExpr in 'D:\DelphiXE8\Embarcadero\Studio\16.0\lib\regexpr_RU\Source\RegExpr.pas';
 
 {$R *.res}
 

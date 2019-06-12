@@ -8,7 +8,7 @@ uses
   IdHTTP, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL, IdSSLOpenSSLHeaders,
   RegExpr, IdBaseComponent, IdCookieManager, IdURI, IdHeaderList, IdGlobalProtocols,
   Vcl.OleCtrls, SHDocVw,
-  MSHTML, ActiveX;
+  MSHTML, ActiveX, Vcl.ExtCtrls;
 
 type
   TForm1 = class(TForm)
@@ -16,7 +16,8 @@ type
     Memo1: TMemo;
     Button2: TButton;
     WebBrowser1: TWebBrowser;
-    StringGrid1: TStringGrid;
+    event_line: TStringGrid;
+    Timer1: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -24,6 +25,7 @@ type
       const pDisp: IDispatch; const URL: OleVariant);
     procedure WebBrowser1DocumentComplete(ASender: TObject;
       const pDisp: IDispatch; const URL: OleVariant);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -34,6 +36,7 @@ var
   Form1: TForm1;
   CurDispatch: IDispatch;
   function StripTag(S: string): string;
+  function SymbolEntersCount(s: string; ch: char): Integer;
 
 implementation
 
@@ -54,10 +57,21 @@ begin
   Result := S;
 end;
 
+function SymbolEntersCount(s: string; ch: char): Integer; // функция подсчёта количества символов
+var
+  i: Integer;
+begin
+  Result := 0;
+  if Trim(s) <> '' then
+    for i := 1 to length(s) do
+      if s[i] = ch then
+        Inc(Result);
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Form1.WindowState := wsMaximized;
-  WebBrowser1.Navigate('https://olimp.kz/mobile/index.php?page=line&action=1&live=1');
+  WebBrowser1.Navigate('https://olimp.kz/mobile/index.php?page=line&action=1&live=1&old_version=1');
 end;
 
 procedure TForm1.WebBrowser1NavigateComplete2(ASender: TObject;
@@ -94,10 +108,10 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 var
-  s: string;
+  s, fp, lp: string;
   lst1: TStringList;
   re1: TRegExpr;
-  i: integer;
+  i, j: integer;
 begin
   lst1 := TStringList.Create;
   re1 := TRegExpr.Create;
@@ -111,9 +125,9 @@ begin
     until not re1.ExecNext;
 
   for i := 0 to lst1.Count - 1 do
-    StringGrid1.Cells[0, i + 1] := Trim(StripTag(lst1.Strings[i]));
+    event_line.Cells[0, i + 1] := Trim(StripTag(lst1.Strings[i]));
   lst1.Clear;
-    
+
   re1.Expression := 'live\[]=\d{2,10}">(.*?)<BR>';  //event
   if re1.Exec(s) then
     repeat
@@ -121,7 +135,7 @@ begin
     until not re1.ExecNext;
 
   for i := 0 to lst1.Count - 1 do
-    StringGrid1.Cells[1, i + 1] := Trim(StripTag(lst1.Strings[i]));
+    event_line.Cells[1, i + 1] := Trim(StripTag(lst1.Strings[i]));
   lst1.Clear;
 
   re1.Expression := 'lost>(.*?)</SPAN>';  //score
@@ -131,11 +145,33 @@ begin
     until not re1.ExecNext;
 
   for i := 0 to lst1.Count - 1 do
-    StringGrid1.Cells[2, i + 1] := Trim(StripTag(lst1.Strings[i]));
+    event_line.Cells[2, i + 1] := Trim(StripTag(lst1.Strings[i]));
   lst1.Clear;
-    
-  Memo1.Text := s;
-  
+
+  j := 0; // подсчёт количества непустых строк
+  for i := 1 to event_line.RowCount do
+    if length(event_line.Cells[0, i]) > 1 then Inc(j);
+
+  for i := 1 to j do  //подсчёт количества прошедших периодов
+    event_line.Cells[3, i] := IntToStr(SymbolEntersCount(event_line.Cells[2, i], ',') + 1);
+
+  fp := '(';
+  lp := ')';
+  for i := 1 to j do
+    begin
+      event_line.Cells[4, i] := copy(event_line.Cells[2, i], pos(fp, event_line.Cells[2, i]) + length(fp), pos(lp, event_line.Cells[2, i]) - pos(fp, event_line.Cells[2, i]) - length(fp));
+      event_line.Cells[4, i] := StringReplace(event_line.Cells[4, i], '(', '', [rfReplaceAll, rfIgnoreCase]);
+      event_line.Cells[4, i] := StringReplace(event_line.Cells[4, i], ')', '', [rfReplaceAll, rfIgnoreCase]);
+    end;
+
+
+  //Memo1.Text := IntToStr(j);
+
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  Button2Click(Sender);
 end;
 
 

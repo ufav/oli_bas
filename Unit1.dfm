@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 773
+  ClientHeight = 742
   ClientWidth = 1087
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -14,7 +14,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   DesignSize = (
     1087
-    773)
+    742)
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
@@ -57,7 +57,7 @@ object Form1: TForm1
       8000000000000000000000000000000000000000000000000000000000000000
       00000000000000000100000000000000000000000000000000000000}
   end
-  object StringGrid1: TStringGrid
+  object event_line: TStringGrid
     Left = 8
     Top = 296
     Width = 1071
@@ -74,7 +74,7 @@ object Form1: TForm1
       295
       300
       64
-      64
+      188
       64
       64
       64
@@ -85,5 +85,11 @@ object Form1: TForm1
       64
       64
       64)
+  end
+  object Timer1: TTimer
+    Interval = 10000
+    OnTimer = Timer1Timer
+    Left = 864
+    Top = 152
   end
 end
